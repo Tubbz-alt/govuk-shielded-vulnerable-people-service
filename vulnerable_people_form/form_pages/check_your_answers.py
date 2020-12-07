@@ -7,7 +7,7 @@ from .shared.render import render_template_with_title
 from .shared.routing import route_to_next_form_page, dynamic_back_url
 from .shared.session import persist_answers_from_session, form_answers, get_summary_rows_from_form_answers, \
     get_postcode_tier, is_very_high_plus_shielding_without_basic_care_needs_answer
-from ..integrations import govuk_notify_client, spl_check
+from ..integrations import govuk_notify_client
 
 
 @form.route("/check-your-answers", methods=["GET"])
@@ -30,10 +30,9 @@ def get_check_your_answers():
 
 @form.route("/check-your-answers", methods=["POST"])
 def post_check_your_answers():
-    registration_number = persist_answers_from_session()
+    registration_number, is_spl_match = persist_answers_from_session()
     session["registration_number"] = registration_number
 
-    is_spl_match = spl_check.check_spl(form_answers()["nhs_number"], form_answers()["date_of_birth"])
     if "NOTIFY_DISABLED" not in current_app.config:
         govuk_notify_client.send_notification(registration_number, is_spl_match)
 
